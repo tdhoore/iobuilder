@@ -1,0 +1,151 @@
+{
+  "name": "iobuilder",
+  "displayName": "ioBuilder",
+  "description": "Automated file building",
+  "version": "0.0.10",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "iobuilder.init",
+        "title": "Start iobuilder"
+      },
+      {
+        "command": "iobuilder.addCssFolders",
+        "title": "Add css output folder"
+      },
+      {
+        "command": "iobuilder.buildFonts",
+        "title": "Convert font files"
+      },
+      {
+        "command": "iobuilder.buildCssFiles",
+        "title": "Extract css classes from file"
+      },
+      {
+        "command": "iobuilder.createTemplate",
+        "title": "Create template"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "iobuilder.addCssFolders",
+          "group": "boilerplate",
+          "when": "!resourceExtname"
+        },
+        {
+          "command": "iobuilder.buildFonts",
+          "group": "boilerplate",
+          "when": "!resourceExtname"
+        },
+        {
+          "command": "iobuilder.buildCssFiles",
+          "group": "boilerplate",
+          "when": "resourceExtname"
+        },
+        {
+          "command": "iobuilder.createTemplate",
+          "group": "boilerplate",
+          "when": "resourceExtname"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "iO builder",
+      "properties": {
+        "ioBuilder.fileExtentions.cssFolders": {
+          "type": "string",
+          "editPresentation": "multilineText",
+          "default": "",
+          "description": "Comma seperate all folder paths that could hold the css code"
+        },
+        "ioBuilder.cssBuilder.folders": {
+          "type": "string",
+          "default": "components,blocks",
+          "description": "These folders can have generated classes"
+        },
+        "ioBuilder.fileExtentions.cssExtensions": {
+          "type": "string",
+          "default": "css,scss",
+          "description": "Comma seperate all possible css extensions"
+        },
+        "ioBuilder.fileExtentions.mainCssFileNames": {
+          "type": "string",
+          "editPresentation": "multilineText",
+          "default": "index,main,style,styles",
+          "description": "Comma seperate all possible file names that could be main css files"
+        },
+        "ioBuilder.boilerplates": {
+          "type": "array",
+          "description": "Add boilerplate listeners here",
+          "default": [
+            {
+              "extensions": [
+                "jsx",
+                "tsx"
+              ],
+              "boilerplate": "import React from \"react\";\n\n export default function $0() {\n  return <div className=\"\"></div>;\n}"
+            },
+            {
+              "extensions": [
+                "css",
+                "scss"
+              ],
+              "boilerplate": ".$0$1 {\n\n}"
+            },
+            {
+              "extensions": [
+                "vue"
+              ],
+              "boilerplate": "<template>\n<div class=\"\"></div>\n</template>\n\n<script>\n\n</script>\n\n<style scoped>\n\n</style>"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "yarn run check-types && yarn run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "yarn run check-types && yarn run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.99.0",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "esbuild": "^0.25.1",
+    "eslint": "^9.23.0",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@hayes0724/web-font-converter": "^1.0.5",
+    "case-anything": "^3.1.2",
+    "glob-to-regexp": "^0.4.1",
+    "minimatch": "^10.0.1",
+    "ttfmeta": "^1.1.2"
+  }
+}
