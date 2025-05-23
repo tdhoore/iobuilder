@@ -1,7 +1,8 @@
 import { Uri, workspace } from "vscode";
-import { cssType, linkCssFiles, mainCssPath } from "./fileManager";
+import { getExtensionFromMainCssFile, linkCssFiles, mainCssPath } from "./fileManager";
 import { folders, rootPath } from "./config";
 import * as fs from "fs";
+import { addIndexFileToFolder } from "./cssManager";
 
 interface cssFileClassType {
   base: string;
@@ -74,11 +75,12 @@ const buildCssFiles = async (cssFileClasses: cssFileClassType[]) => {
   });
 };
 
-const createCssFilesBasedOnClasses = (classes: string[]) => {
+const createCssFilesBasedOnClasses = async (classes: string[]) => {
+  const cssType: string = await getExtensionFromMainCssFile();
   const fileNames: string[] = [];
   const filePaths: string[] = [];
   const cssFileClasses: cssFileClassType[] = [];
-
+  console.log(mainCssPath, cssType);
   //make sure that all base files exist
   //if not create them
   classes.forEach((className: string) => {
@@ -116,8 +118,11 @@ const createCssFilesBasedOnClasses = (classes: string[]) => {
 };
 
 export const buildCssFilesFromContent = async (file: Uri) => {
+  //make sure there is an index file
+  await addIndexFileToFolder(Uri.file(mainCssPath));
+
   const classes: string[] = await extractClassesFromFile(file);
-  const fileClasses: cssFileClassType[] = createCssFilesBasedOnClasses(classes);
+  const fileClasses: cssFileClassType[] = await createCssFilesBasedOnClasses(classes);
 
   await buildCssFiles(fileClasses);
 

@@ -1,6 +1,8 @@
 import { minimatch } from "minimatch";
 import { ConfigurationTarget, Uri, workspace } from "vscode";
 import { inputPaths, cssFolders, mainCssFileNames, cssExts } from "./config";
+import { mainCssPath } from "./fileManager";
+import * as fs from "fs";
 
 const encoder = new TextEncoder();
 
@@ -12,6 +14,8 @@ const isPartOfCssBuilder = (uri: Uri) => {
       result = true;
     }
   });
+
+  console.log(result);
 
   return result;
 };
@@ -31,13 +35,10 @@ export const addCssInput = async (uri: Uri) => {
   }
 };
 
-const addIndexFileToFolder = async (uri: Uri) => {
-  //@ts-ignore
-  const path = `**${uri.path}/{${mainCssFileNames.join(",")}}.{${cssExts.join(",")}}`.replace(workspace.workspaceFolders[0].uri.path, "");
+export const addIndexFileToFolder = async (uri: Uri) => {
+  const folderfiles = fs.readdirSync(uri.path.substring(1));
 
-  const indexFiles = await workspace.findFiles(path);
-
-  if (!indexFiles.length) {
+  if (!folderfiles.filter((folderfile) => cssExts.some((cssExt) => folderfile.includes(cssExt)) && mainCssFileNames.some((mainCssFileName) => folderfile.includes(mainCssFileName))).length) {
     //no file present so create one
     workspace.fs.writeFile(Uri.file(`${uri.path}/index.css`), encoder.encode(""));
   }

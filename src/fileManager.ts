@@ -3,6 +3,8 @@ const { kebabCase, pascalCase } = require("case-anything");
 const { minimatch } = require("minimatch");
 import * as fs from "fs";
 import { cssFolders, mainCssFileNames, cssExts, boilerplates, rootPath } from "./config";
+import { addIndexFileToFolder } from "./cssManager";
+import { camelCase } from "case-anything";
 
 interface transformFileType {
   file: Uri;
@@ -11,11 +13,10 @@ interface transformFileType {
   boilerplate: string;
 }
 
-export let cssType: string = "css";
+let cssType: string = "css";
 export let mainCssPath: string = "";
 
 const encoder = new TextEncoder();
-const decoder = new TextDecoder();
 
 const createLinkCssFile = (mainPath: string, files: string[]) => {
   const fileContent: string = files.map((file) => `@import '${file}';`).join(`\n`);
@@ -81,7 +82,7 @@ export const linkCssFiles = async (): Promise<string> => {
   return mainCssPath;
 };
 
-const getExtensionFromMainCssFile = () => {
+export const getExtensionFromMainCssFile = () => {
   return workspace.fs.readDirectory(Uri.file(`${mainCssPath}`)).then((files) => {
     let extension = "css";
 
@@ -211,7 +212,7 @@ const transformFile = ({ file, urlParts, fileName, boilerplate }: transformFileT
       .map((part, index) => {
         if (urlParts.length - 1 <= index) {
           //is file name to be edited
-          return `${pascalCase(fileParts[0])}.${fileParts[fileParts.length - 1]}`;
+          return `${camelCase(fileParts[0])}.${fileParts[fileParts.length - 1]}`;
         }
 
         return part;
@@ -226,9 +227,18 @@ const transformFile = ({ file, urlParts, fileName, boilerplate }: transformFileT
   });
 };
 
-export const onUpdateFile = (file: Uri) => {
+export const onUpdateFile = async (file: Uri) => {
   const urlParts = file.path.split("/");
   const fileName = urlParts[urlParts.length - 1];
+
+  //make sure there is an index file
+  await addIndexFileToFolder(Uri.file(mainCssPath));
+
+  console.log(
+    cssExts,
+    urlParts,
+    urlParts.some((part) => cssExts.includes(part))
+  );
 
   if (urlParts.some((part) => cssExts.includes(part)) || cssFolders.some((folderPath) => minimatch(file.path, folderPath))) {
     //is part of a css structure
